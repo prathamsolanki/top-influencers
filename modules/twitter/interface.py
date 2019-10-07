@@ -1,6 +1,9 @@
 import json
 import requests
 import base64
+import tweepy
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="Twitter", timeout=10)
 
 class TwitterAuth:
 
@@ -26,6 +29,10 @@ class TwitterAuth:
 
         self.token = response.json()['access_token']
 
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_key, access_secret)
+        self.api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+
     
     def get_tweets(self, geocode, last_id=None):
         url_rest = "https://api.twitter.com/1.1/search/tweets.json"
@@ -50,3 +57,19 @@ class TwitterAuth:
         ).json()
 
 
+    def get_followers(self, user_name, state, country):
+
+        for followers in tweepy.Cursor(self.api.followers_ids, screen_name=user_name).pages():
+            qualified_followers = []
+
+            for follower in followers:
+                follower_object = self.api.get_user(str(follower))
+                location = geolocator.geocode(follower_object.location, addressdetails=True)
+
+                try:
+                    if ((location.raw['address']['country'] != country) or (location.raw['address']['state'] != state)):
+                        continue
+                except AttributeError:
+                    qualified_followers.append(follower_object)
+
+        return follower_object
