@@ -64,10 +64,10 @@ class TwitterAuth:
 
             for follower in followers:
                 follower_object = self.api.get_user(str(follower))
-                location = geolocator.geocode(follower_object.location, addressdetails=True)
+                location = geolocator.geocode(follower_object.location, addressdetails=True).raw
 
                 try:
-                    if ((location.raw['address']['country'] != country) or (location.raw['address']['state'] != state)):
+                    if ((location['address']['country'] != country) or (location['address']['state'] != state)):
                         continue
                 except AttributeError:
                     qualified_followers.append(follower_object)
