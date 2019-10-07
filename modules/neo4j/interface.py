@@ -57,11 +57,18 @@ class Neo4j:
             )
 
 
+<<<<<<< HEAD
     def get_users(self):
+=======
+    def get_user(self):
+>>>>>>> 81acb2fcca5e5d97deefed04c233368b1c03e316
         with self._driver.session() as session:
             users = session.run(
-                "match (:User) as user "
-                "return user.id "
+                "match (:User {is_processed: false}) as user "
+                "with user "
+                "limit 1 "
+                "set user.is_processed = true "
+                "return user.screen_name"
             )
 
             return users
@@ -81,7 +88,13 @@ class Neo4j:
     def write_followership(self, following, followers_list):
         with self._driver.session() as session:
             session.run(
-                ""
+                "using periodic commit 500 "
+                "match (a:User {id: {following.id}}) "
+                "with a as following, [follower in {followers} | follower] as followers "
+                "unwind followers as follower "
+                "create unique (f:User {id: follower.id, name: follower.name, screen_name: follower.screen_name, location: follower.location, url: follower.url, description: follower.description, followers_count: follower.followers_count, friends_count: follower.friends_count, listed_count: follower.listed_count, favourites_count: follower.favourites_count, statuses_count: follower.statuses_count, created_at: follower.created_at, is_processed: true}) - [:follows] -> (following)",
+                following=following,
+                followers_list=followers_list
             )
 
 
