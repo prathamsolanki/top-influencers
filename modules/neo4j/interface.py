@@ -29,15 +29,34 @@ class Neo4j:
 
     def get_lastId(self, ):
         """
-        Getting teh last_id for retrieving tweets
+        Getting the last_id for retrieving tweets
         """
-        return 0
+        with self._driver.session() as session:
+            last_id = session.run(
+                "match (x:Execution) "
+                "return x.last_id "
+                "order by x.startedAt desc "
+                "limit 1"
+            ).single().value()
+            
+            return last_id
 
     def write_lastId(self, last_id):
         """
         Update the value for the last_id
         """
-        pass
+        # Get the most recent execution
+        with self._driver.session() as session:
+            session.run(
+                "match (x:Execution) "
+                "with x "
+                "order by x.startedAt desc "
+                "limit 1 "
+                "set x.last_id = {last_id}",
+                last_id=last_id
+            )
+
+
 
 
 if __name__ == "__main__":
@@ -47,6 +66,6 @@ if __name__ == "__main__":
         password="neo4j",
     )
 
-    neo4j.init_execution()
+    print(neo4j.get_lastId())
 
     neo4j.close()
