@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import base64
 import oauth2
 import numpy as np
+import time
 
 from ..twitter.interface import TwitterAuth
 from ..neo4j.interface import Neo4j
@@ -27,7 +28,7 @@ class GetUsers:
         self.neo4j.close()
 
 
-    def run(self, initial_run=False):
+    def _run(self, initial_run=False):
 
         while True:
             if initial_run:
@@ -45,18 +46,34 @@ class GetUsers:
                 except:
                     return
 
-            last_id = self.get_max_id(tweets)
-
-            # Persist the state of the last ID
-            self.neo4j.write_lastId(str(last_id))
-
             #Save the extracted users
             users = [tweet['user'] for tweet in tweets]
             self.neo4j.write_users(users)
 
-        
-    
-    def get_max_id(self, tweets):
+            last_id = self.get_min_id(tweets)
+
+            # Persist the state of the last ID
+            self.neo4j.write_lastId(str(last_id))
+  
+    def get_min_id(self, tweets):
         tweet_ids = np.array([tweet['id'] for tweet in tweets])
-        return tweet_ids.max()
+        return tweet_ids.min()
+
+    
+    @staticmethod
+    def run(credentials):
+        # Initial run
+        # get_users = GetUsers(credentials=credentials[0])
+        # get_users.run(initial_run=True)
+        # get_users.close()
+
+        while True:
+            for c in credentials:
+                get_users = GetUsers(credentials=c)
+                get_users._run()
+                get_users.close()
+
+            # sleep for 10 seconds
+            print("Sleeping...")
+            time.sleep(10)  
 

@@ -57,30 +57,37 @@ class Neo4j:
             )
 
 
-<<<<<<< HEAD
-    def get_users(self):
-=======
     def get_user(self):
->>>>>>> 81acb2fcca5e5d97deefed04c233368b1c03e316
         with self._driver.session() as session:
-            users = session.run(
-                "match (:User {is_processed: false}) as user "
+            user = session.run(
+                "match (user:User {is_processed: false}) "
                 "with user "
                 "limit 1 "
                 "set user.is_processed = true "
                 "return user.screen_name"
-            )
+            ).single().value()
 
-            return users
+            return user
 
 
     def write_users(self, user_objects):
         with self._driver.session() as session:
             session.run(
-                "using periodic commit 500 "
                 "with [user_object in {user_objects} | user_object] as user_objects "
                 "unwind user_objects as user_object "
-                "merge (:User {id: user_object.id, name: user_object.name, screen_name: user_object.screen_name, location: user_object.location, url: user_object.url, description: user_object.description, followers_count: user_object.followers_count, friends_count: user_object.friends_count, listed_count: user_object.listed_count, favourites_count: user_object.favourites_count, statuses_count: user_object.statuses_count, created_at: user_object.created_at, is_processed: false})",
+                "merge (user:User {id: user_object.id}) "
+                "set user.name = user_object.name "
+                "set user.screen_name = user_object.screen_name "
+                "set user.location = user_object.location "
+                "set user.url = user_object.url "
+                "set user.description = user_object.description "
+                "set user.followers_count = user_object.followers_count "
+                "set user.friends_count = user_object.friends_count "
+                "set user.listed_count = user_object.listed_count "
+                "set user.favourites_count = user_object.favourites_count "
+                "set user.statuses_count = user_object.statuses_count "
+                "set user.created_at = user_object.created_at "
+                "set user.is_processed = false ",
                 user_objects=user_objects
             )
 
@@ -88,13 +95,24 @@ class Neo4j:
     def write_followership(self, following, followers_list):
         with self._driver.session() as session:
             session.run(
-                "using periodic commit 500 "
-                "match (a:User {id: {following.id}}) "
+                "match (a:User {screen_name: {following}}) "
                 "with a as following, [follower in {followers} | follower] as followers "
                 "unwind followers as follower "
-                "create unique (f:User {id: follower.id, name: follower.name, screen_name: follower.screen_name, location: follower.location, url: follower.url, description: follower.description, followers_count: follower.followers_count, friends_count: follower.friends_count, listed_count: follower.listed_count, favourites_count: follower.favourites_count, statuses_count: follower.statuses_count, created_at: follower.created_at, is_processed: true}) - [:follows] -> (following)",
+                "create unique (f:User {id: follower.id})-[:Follows]->(following) "
+                "set f.name = follower.name "
+                "set f.screen_name = follower.screen_name "
+                "set f.location = follower.location "
+                "set f.url = follower.url "
+                "set f.description = follower.description "
+                "set f.followers_count = follower.followers_count "
+                "set f.friends_count = follower.friends_count "
+                "set f.listed_count = follower.listed_count "
+                "set f.favourites_count = follower.favourites_count "
+                "set f.statuses_count = follower.statuses_count "
+                "set f.created_at = follower.created_at "
+                "set f.is_processed = true ",
                 following=following,
-                followers_list=followers_list
+                followers=followers_list
             )
 
 

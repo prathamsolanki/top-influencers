@@ -48,26 +48,46 @@ class TwitterAuth:
         if last_id:
             params['max_id'] = last_id
 
-        return requests.get(
+        result = requests.get(
             url_rest, 
             params=params, 
             headers={'Authorization': 'Bearer ' + self.token}
-        ).json()['statuses']
+        ).json()
 
+        if not result.get('statuses'):
+            raise Exception("Rate limited exceeded")
 
-    def get_followers(self, user_name, state, country):
+        return result.get('statuses')
 
-        for followers in tweepy.Cursor(self.api.followers_ids, screen_name=user_name).pages():
-            qualified_followers = []
+    
+class Followers:
+    def __init__(self, user_name, state, country, api):
+        self.state = state
+        self.country = country
+        self.api = api
+        self.pages = tweepy.Cursor(self.api.followers_ids, screen_name=user_name).pages()
+    
+    def next_page(self,):
+        print("Getting a new page")
+        try:
+            followers = self.pages.next()
+        except StopIteration:
+            return None
+        
+        print("Get the qualified followers")
 
-            for follower in followers:
-                follower_object = self.api.get_user(str(follower))
-                location = geolocator.geocode(follower_object.location, addressdetails=True).raw
+        qualified_followers = []
 
-                try:
-                    if ((location['address']['country'] != country) or (location['address']['state'] != state)):
-                        continue
-                except AttributeError:
+        for follower in followers:
+            follower_object = self.api.get_user(str(follower))
+            location = geolocator.geocode(follower_object.location, addressdetails=True)
+
+            try:
+                if ((location.raw['address']['country'] != self.country) or (location.raw['address']['state'] != self.state)):
+                    continue
+                else:
                     qualified_followers.append(follower_object)
-
-        return follower_object
+            except (AttributeError, KeyError):
+                qualified_followers.append(follower_object)
+        
+        return [f._json for f in qualified_followers]

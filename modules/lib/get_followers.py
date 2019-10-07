@@ -5,21 +5,33 @@ import base64
 import numpy as np
 import oauth2
 
-from ..twitter.interface import TwitterAuth
+from ..twitter.interface import TwitterAuth, Followers
 from ..neo4j.interface import Neo4j
 
 class GetFollowers:
 
-    def __init__(self, state="California", country="United States of America"):
-        self.twitter = TwitterAuth()
-        self.neo4j = Neo4j()
+    def __init__(self, credentials=None, state="California", country="United States of America"):
+        self.twitter = TwitterAuth(credentials=credentials) if credentials else TwitterAuth()
+        self.neo4j = Neo4j(
+             uri="bolt://localhost:7687",
+            user="neo4j",
+            password="neo4j",
+        )
         self.state = state
         self.country = country
 
 
-    def run(self):
+    @staticmethod
+    def run(credentials):
+        get_followers = GetFollowers(credentials=credentials)
         while True:
-            user = self.neo4j.get_user()
-            followers = self.twitter.get_followers(user, self.state, self.country)
-            self.neo4j.write_followership(user, followers)
+            user = get_followers.neo4j.get_user()
+            
+            follower_class = Followers(user, get_followers.state, get_followers.country, get_followers.twitter.api)
+            followers = follower_class.next_page()
+            while followers is not None:
+                print("Writing a page of followers")
+                print(len(followers))
+                get_followers.neo4j.write_followership(user, followers)
+                followers = follower_class.next_page()
             

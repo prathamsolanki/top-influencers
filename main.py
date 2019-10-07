@@ -1,23 +1,21 @@
 import time
-
+from multiprocessing import Process
 from modules.lib.get_users_from_tweets import GetUsers
+from modules.lib.get_followers import GetFollowers
 
 credentials = [
     'credentials_pratham.json',
     'credentials_edo.json',
 ]
 
-# Initial run
-# get_users = GetUsers(credentials=credentials[0])
-# get_users.run(initial_run=True)
-# get_users.close()
 
-while True:
-    for c in credentials:
-        get_users = GetUsers(credentials=c)
-        get_users.run()
-        get_users.close()
+# get_users = Process(target=GetUsers.run, args=(credentials,))
+# get_users.start()
 
-    # sleep for 10 seconds
-    time.sleep(10)
+# p = []
+# for i in range(0, len(credentials)):
+#     p.append(Process(target=GetFollowers.run, args=(credentials[i],)))
+#     p[i].start()
+
+GetFollowers.run(credentials[1])
     
