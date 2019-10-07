@@ -18,9 +18,8 @@ class GetFollowers:
 
 
     def run(self):
-        # get users from Neo4j whose isProcessed status is false
-        users = []
-        for user in users:
+        while True:
+            user = self.neo4j.get_user()
             followers = self.twitter.get_followers(user, self.state, self.country)
-            # set isProcessed status of user to true
+            self.neo4j.write_followership(user, followers)
             
