@@ -9,7 +9,7 @@ class TwitterAuth:
         Create an authenticated channel with Twitter APIs
         """
         credentials = "./" + credentials
-        
+
         with open(credentials) as cred_data:
             info = json.load(cred_data)
             self.consumer_key = info['CONSUMER_KEY']
@@ -25,3 +25,28 @@ class TwitterAuth:
                                 data={'grant_type':'client_credentials'})
 
         self.token = response.json()['access_token']
+
+    
+    def get_tweets(self, geocode, last_id=None):
+        url_rest = "https://api.twitter.com/1.1/search/tweets.json"
+        
+        q = '* -filter:retweets'
+
+        params = {
+            'q': q, 
+            'count': 100, 
+            'lang': 'en', 
+            'geocode': geocode, 
+            'result_type': 'recent'
+        }
+
+        if last_id:
+            params['max_id'] = last_id
+
+        return requests.get(
+            url_rest, 
+            params=params, 
+            headers={'Authorization': 'Bearer ' + self.token}
+        ).json()
+
+
