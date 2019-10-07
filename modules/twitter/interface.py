@@ -11,8 +11,6 @@ class TwitterAuth:
         """
         Create an authenticated channel with Twitter APIs
         """
-        credentials = "./" + credentials
-
         with open(credentials) as cred_data:
             info = json.load(cred_data)
             self.consumer_key = info['CONSUMER_KEY']
@@ -29,8 +27,8 @@ class TwitterAuth:
 
         self.token = response.json()['access_token']
 
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-        auth.set_access_token(access_key, access_secret)
+        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+        auth.set_access_token(self.access_key, self.access_secret)
         self.api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
     
@@ -54,7 +52,7 @@ class TwitterAuth:
             url_rest, 
             params=params, 
             headers={'Authorization': 'Bearer ' + self.token}
-        ).json()
+        ).json()['statuses']
 
 
     def get_followers(self, user_name, state, country):

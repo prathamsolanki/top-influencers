@@ -2,3 +2,7 @@
 .vscode/*
 influencers_venv
 influencers_venv/*
+
+credentials_default.json
+credentials_edo.json
+credentials_pratham.json

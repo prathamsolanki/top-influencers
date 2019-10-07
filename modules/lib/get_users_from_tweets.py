@@ -11,12 +11,20 @@ from ..twitter.interface import TwitterAuth
 from ..neo4j.interface import Neo4j
 
 
-class GetUser:
+class GetUsers:
 
-    def __init__(self, geocode="34.036654,-118.193582,150km"):
-        self.twitter = TwitterAuth()
-        self.neo4j = Neo4j()
+    def __init__(self, credentials=None, geocode="34.036654,-118.193582,150km"):
+        self.twitter = TwitterAuth(credentials=credentials) if credentials else TwitterAuth()
+        self.neo4j = Neo4j(
+            uri="bolt://localhost:7687",
+            user="neo4j",
+            password="neo4j",
+        )
         self.geocode = geocode
+
+    
+    def close(self, ):
+        self.neo4j.close()
 
 
     def run(self, initial_run=False):
@@ -31,7 +39,7 @@ class GetUser:
 
             else:
                 # Get the current state of execution
-                last_id = self.neo4j.get_lastId()
+                last_id = int(self.neo4j.get_lastId())
                 try:
                     tweets = self.twitter.get_tweets(self.geocode, last_id=last_id)
                 except:
@@ -40,7 +48,7 @@ class GetUser:
             last_id = self.get_max_id(tweets)
 
             # Persist the state of the last ID
-            self.neo4j.write_lastId(last_id)
+            self.neo4j.write_lastId(str(last_id))
 
             #Save the extracted users
             users = [tweet['user'] for tweet in tweets]
@@ -49,6 +57,6 @@ class GetUser:
         
     
     def get_max_id(self, tweets):
-        tweet_ids = np.array([tweet['id'] for tweet in tweets['statuses']])
+        tweet_ids = np.array([tweet['id'] for tweet in tweets])
         return tweet_ids.max()
 
