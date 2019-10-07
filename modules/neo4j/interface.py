@@ -57,6 +57,30 @@ class Neo4j:
             )
 
 
+    def get_users(self):
+        with self.driver.session() as session:
+            users = session.run(
+                "match (:User) as user "
+                "return user.id "
+            )
+
+            return users
+
+
+    def write_users(self, user_objects):
+        with self.driver.session() as session:
+            session.run(
+                "with [user_object in {user_objects} | user_object] as user_objects "
+                "unwind user_objects as user_object "
+                "create (:User {id: user_object.id, name: user_object.name, screen_name: user_object.screen_name, location: user_object.location, url: user_object.url, description: user_object.description, followers_count: user_object.followers_count, friends_count: user_object.friends_count, listed_count: user_object.listed_count, favourites_count: user_object.favourites_count, statuses_count: user_object.statuses_count, created_at: user_object.created_at, is_processed: false})"
+            )
+
+
+    def write_followership(self, following, followers_list):
+        with self.driver.session() as session:
+            session.run(
+                ""
+            )
 
 
 if __name__ == "__main__":
