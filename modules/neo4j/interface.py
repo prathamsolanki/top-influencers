@@ -83,6 +83,15 @@ class Neo4j:
             )
 
 
+    def test(self, list_param):
+        with self._driver.session() as session:
+            result = session.run(
+                "return [x in {list_param} | x.name] as result",
+                list_param=list_param
+            )
+            print(result.single().value())
+
+
 if __name__ == "__main__":
     neo4j = Neo4j(
         uri="bolt://localhost:7687",
@@ -90,6 +99,6 @@ if __name__ == "__main__":
         password="neo4j",
     )
 
-    print(neo4j.get_lastId())
+    neo4j.test([{'name': 'hello'}, {'name': 'how are you?'}])
 
     neo4j.close()
