@@ -30,8 +30,6 @@ class GetFollowers:
             follower_class = Followers(user, get_followers.state, get_followers.country, get_followers.twitter.api)
             followers = follower_class.next_page()
             while followers is not None:
-                print("Writing a page of followers")
-                print(len(followers))
                 get_followers.neo4j.write_followership(user, followers)
                 followers = follower_class.next_page()
             

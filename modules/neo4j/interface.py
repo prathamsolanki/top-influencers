@@ -98,19 +98,7 @@ class Neo4j:
                 "match (a:User {screen_name: {following}}) "
                 "with a as following, [follower in {followers} | follower] as followers "
                 "unwind followers as follower "
-                "create unique (f:User {id: follower.id})-[:Follows]->(following) "
-                "set f.name = follower.name "
-                "set f.screen_name = follower.screen_name "
-                "set f.location = follower.location "
-                "set f.url = follower.url "
-                "set f.description = follower.description "
-                "set f.followers_count = follower.followers_count "
-                "set f.friends_count = follower.friends_count "
-                "set f.listed_count = follower.listed_count "
-                "set f.favourites_count = follower.favourites_count "
-                "set f.statuses_count = follower.statuses_count "
-                "set f.created_at = follower.created_at "
-                "set f.is_processed = true ",
+                "create unique (f:User {id: follower})-[:Follows]->(following) ",
                 following=following,
                 followers=followers_list
             )

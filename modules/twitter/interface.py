@@ -75,19 +75,5 @@ class Followers:
             return None
         
         print("Get the qualified followers")
-
-        qualified_followers = []
-
-        for follower in followers:
-            follower_object = self.api.get_user(str(follower))
-            location = geolocator.geocode(follower_object.location, addressdetails=True)
-
-            try:
-                if ((location.raw['address']['country'] != self.country) or (location.raw['address']['state'] != self.state)):
-                    continue
-                else:
-                    qualified_followers.append(follower_object)
-            except (AttributeError, KeyError):
-                qualified_followers.append(follower_object)
         
-        return [f._json for f in qualified_followers]
+        return followers
