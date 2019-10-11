@@ -60,10 +60,10 @@ class Neo4j:
     def get_user(self):
         with self._driver.session() as session:
             user = session.run(
-                "match (user:User {is_processed: false}) "
+                "match (user:User {is_processed: false, is_being_processed: false}) "
                 "with user "
                 "limit 1 "
-                "set user.is_processed = true "
+                "set user.is_being_processed = true "
                 "return user.screen_name"
             ).single().value()
 
@@ -87,7 +87,8 @@ class Neo4j:
                 "set user.favourites_count = user_object.favourites_count "
                 "set user.statuses_count = user_object.statuses_count "
                 "set user.created_at = user_object.created_at "
-                "set user.is_processed = false ",
+                "set user.is_processed = false "
+                "set user.is_being_processed = false ",
                 user_objects=user_objects
             )
 
@@ -103,6 +104,14 @@ class Neo4j:
                 followers=followers_list
             )
 
+    def user_processed(self, user):
+        with self._driver.session() as session:
+            session.run(
+                "match (u:User {screen_name: {user_name}}) "
+                "set u.is_processed = true "
+                "set u.is_being_processed = false ",
+                user_name=user,
+            )
 
     def test(self, list_param):
         with self._driver.session() as session:

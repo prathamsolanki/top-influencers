@@ -9,13 +9,11 @@ credentials = [
 ]
 
 
-# get_users = Process(target=GetUsers.run, args=(credentials,))
-# get_users.start()
+get_users = Process(target=GetUsers.run, args=(credentials,))
+get_users.start()
 
-# p = []
-# for i in range(0, len(credentials)):
-#     p.append(Process(target=GetFollowers.run, args=(credentials[i],)))
-#     p[i].start()
-
-GetFollowers.run(credentials[1])
+p = []
+for i in range(0, len(credentials)):
+    p.append(Process(target=GetFollowers.run, args=(credentials[i],)))
+    p[i].start()
     

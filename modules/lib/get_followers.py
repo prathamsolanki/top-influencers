@@ -33,3 +33,4 @@ class GetFollowers:
                 get_followers.neo4j.write_followership(user, followers)
                 followers = follower_class.next_page()
             
+            get_followers.neo4j.user_processed(user)

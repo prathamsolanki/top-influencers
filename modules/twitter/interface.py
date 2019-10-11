@@ -74,6 +74,4 @@ class Followers:
         except StopIteration:
             return None
         
-        print("Get the qualified followers")
-        
         return followers

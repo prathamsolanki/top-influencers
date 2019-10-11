@@ -61,7 +61,7 @@ class GetUsers:
 
     
     @staticmethod
-    def run(credentials):
+    def run(credentials, initial_run=False):
         # Initial run
         # get_users = GetUsers(credentials=credentials[0])
         # get_users.run(initial_run=True)
@@ -70,7 +70,7 @@ class GetUsers:
         while True:
             for c in credentials:
                 get_users = GetUsers(credentials=c)
-                get_users._run()
+                get_users._run(initial_run=initial_run)
                 get_users.close()
 
             # sleep for 10 seconds
