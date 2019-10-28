@@ -19,7 +19,7 @@ class GetUsers:
         self.neo4j = Neo4j(
             uri="bolt://localhost:7687",
             user="neo4j",
-            password="neo4j",
+            password="root",
         )
         self.geocode = geocode
 
@@ -68,8 +68,8 @@ class GetUsers:
         # get_users.close()
 
         while True:
-            for c in credentials:
-                get_users = GetUsers(credentials=c)
+            for cred in credentials:
+                get_users = GetUsers(credentials=cred)
                 get_users._run(initial_run=initial_run)
                 get_users.close()
 
