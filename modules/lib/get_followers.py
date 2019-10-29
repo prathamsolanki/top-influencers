@@ -15,7 +15,7 @@ class GetFollowers:
         self.neo4j = Neo4j(
              uri="bolt://localhost:7687",
             user="neo4j",
-            password="neo4j",
+            password="root",
         )
         self.state = state
         self.country = country

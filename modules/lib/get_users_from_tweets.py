@@ -7,6 +7,7 @@ import base64
 import oauth2
 import numpy as np
 import time
+from geopy.geocoders import Nominatim
 
 from ..twitter.interface import TwitterAuth
 from ..neo4j.interface import Neo4j
@@ -19,9 +20,10 @@ class GetUsers:
         self.neo4j = Neo4j(
             uri="bolt://localhost:7687",
             user="neo4j",
-            password="neo4j",
+            password="root",
         )
         self.geocode = geocode
+        self.geolocator = Nominatim(user_agent="Twitter", timeout=10)
 
     
     def close(self, ):
@@ -47,7 +49,14 @@ class GetUsers:
                     return
 
             #Save the extracted users
-            users = [tweet['user'] for tweet in tweets]
+            users = []
+            for tweet in tweets:
+                try:
+                    if (self.geolocator.geocode(tweet['user']['location'], addressdetails=True).raw['address']['country'] == "United States of America") and (self.geolocator.geocode(tweet['user']['location'], addressdetails=True).raw['address']['state'] == "California"):
+                        users.append(tweet['user'])
+                except:
+                    pass
+           
             self.neo4j.write_users(users)
 
             last_id = self.get_min_id(tweets)
@@ -68,8 +77,9 @@ class GetUsers:
         # get_users.close()
 
         while True:
-            for c in credentials:
-                get_users = GetUsers(credentials=c)
+            for cred in credentials:
+                print(cred)
+                get_users = GetUsers(credentials=cred)
                 get_users._run(initial_run=initial_run)
                 get_users.close()
 
