@@ -78,7 +78,6 @@ class GetUsers:
 
         while True:
             for cred in credentials:
-                print(cred)
                 get_users = GetUsers(credentials=cred)
                 get_users._run(initial_run=initial_run)
                 get_users.close()
